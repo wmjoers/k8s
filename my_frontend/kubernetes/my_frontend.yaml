@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-frontend-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-frontend-pod
+  template:
+    metadata:
+      labels:
+        app: my-frontend-pod
+    spec:
+      containers:
+      - name: my-frontend-container
+        image: johneriksson13/my_frontend:1.1.2
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-frontend-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: my-frontend-pod
+  ports:
+  - port: 8080
+    targetPort: 80

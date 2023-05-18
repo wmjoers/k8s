@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-database-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-database-pod
+  template:
+    metadata:
+      labels:
+        app: my-database-pod
+    spec:
+      containers:
+        - name: my-database-container
+          image: postgres
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: my-database-config
+            - secretRef:
+                name: my-database-secret
+          volumeMounts:
+            - mountPath: /var/lib/postgres/data
+              name: db-data
+      volumes:
+        - name: db-data
+          persistentVolumeClaim:
+            claimName: my-database-volume-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-database-service
+  labels:
+    app: my-database-pod
+spec:
+  type: LoadBalancer
+  selector:
+    app: my-database-pod
+  ports:
+    - port: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-database-service-internal
+  labels:
+    app: my-database-pod
+spec:
+  selector:
+    app: my-database-pod
+  ports:
+    - port: 5432
+
